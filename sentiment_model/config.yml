@@ -26,6 +26,11 @@ unused_fields:  # Features to drop before pipeline
   - HelpfulnessNumerator
   - HelpfulnessDenominator
   
+# Features inside processing pipeline
+Time_var: Time
+Text_var: Text
+
+
 # set train/test split
 test_size: 0.20
 
