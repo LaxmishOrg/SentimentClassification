@@ -6,12 +6,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 
-from titanic_model.config.core import config
-from titanic_model.processing.features import embarkImputer
-from titanic_model.processing.features import Mapper
-from titanic_model.processing.features import age_col_tfr
+from sentiment_model.config.core import config
+from sentiment_model.processing.features import embarkImputer
+from sentiment_model.processing.features import Mapper
+from sentiment_model.processing.features import age_col_tfr
 
-titanic_pipe=Pipeline([
+sentiment_pipe=Pipeline([
     
     ("embark_imputation", embarkImputer(variables=config.model_config.embarked_var)
      ),
