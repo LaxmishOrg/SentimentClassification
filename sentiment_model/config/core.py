@@ -1,16 +1,18 @@
 # Path setup, and access the config.yml file, datasets folder & trained models
 import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
+from pathlib import Path
 from typing import Dict, List
+
 from pydantic import BaseModel
 from strictyaml import YAML, load
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 import sentiment_model
 
 # Project Directories
-PACKAGE_ROOT = Path(titanic_model.__file__).resolve().parent
-#print(PACKAGE_ROOT)
+PACKAGE_ROOT = Path(sentiment_model.__file__).resolve().parent
 ROOT = PACKAGE_ROOT.parent
 CONFIG_FILE_PATH = PACKAGE_ROOT / "config.yml"
 #print(CONFIG_FILE_PATH)
@@ -27,7 +29,8 @@ class AppConfig(BaseModel):
     package_name: str
     training_data_file: str
     test_data_file: str
-    pipeline_save_file: str
+    model_name: str
+    model_save_file: str
 
 
 class ModelConfig(BaseModel):
@@ -35,23 +38,23 @@ class ModelConfig(BaseModel):
     All configuration relevant to model
     training and feature engineering.
     """
-
-    target: str
-    features: List[str]
-    unused_fields: List[str]
-    embarked_var: str 
-    gender_var:str 
-    title_var:str 
-    age_var: str 
-    gender_mappings: Dict[str, int]
-    embarked_mappings: Dict[str, int]
-    title_mappings: Dict[str, int]
-  
-    test_size:float
+        
+    batch_size: int
     random_state: int
-    n_estimators: int
-    max_depth: int
-
+    epochs: int
+    optimizer: str
+    loss: str
+    accuracy_metric: str
+    verbose: int
+    earlystop: int
+    monitor: str
+    save_best_only: bool
+    input_dim: int
+    output_dim: int
+    dropout: float
+    rdropout: float
+    units: int
+    
 
 class Config(BaseModel):
     """Master config object."""
@@ -62,8 +65,10 @@ class Config(BaseModel):
 
 def find_config_file() -> Path:
     """Locate the configuration file."""
+    
     if CONFIG_FILE_PATH.is_file():
         return CONFIG_FILE_PATH
+    
     raise Exception(f"Config not found at {CONFIG_FILE_PATH!r}")
 
 
@@ -77,6 +82,7 @@ def fetch_config_from_yaml(cfg_path: Path = None) -> YAML:
         with open(cfg_path, "r") as conf_file:
             parsed_config = load(conf_file.read())
             return parsed_config
+        
     raise OSError(f"Did not find config file at path: {cfg_path}")
 
 
@@ -87,8 +93,8 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
 
     # specify the data attribute from the strictyaml YAML type.
     _config = Config(
-        app_config=AppConfig(**parsed_config.data),
-        model_config=ModelConfig(**parsed_config.data),
+        app_config = AppConfig(**parsed_config.data),
+        model_config = ModelConfig(**parsed_config.data),
     )
 
     return _config

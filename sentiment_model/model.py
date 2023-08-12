@@ -1,33 +1,33 @@
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
+from tensorflow import keras
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.layers import Input, LSTM, Embedding, Dense,Dropout,BatchNormalization
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras import layers
 
 from sentiment_model.config.core import config
-from sentiment_model.processing.features import embarkImputer
-from sentiment_model.processing.features import Mapper
-from sentiment_model.processing.features import age_col_tfr
+from sentiment_model.processing.features import data_augmentation
 
-sentiment_pipe=Pipeline([
-    
-    ("embark_imputation", embarkImputer(variables=config.model_config.embarked_var)
-     ),
-     ##==========Mapper======##
-     ("map_sex",Mapper(config.model_config.gender_var, config.model_config.gender_mappings)
-      ),
-     ("map_embarked",Mapper(config.model_config.embarked_var, config.model_config.embarked_mappings )
-     ),
-     ("map_title",Mapper(config.model_config.title_var, config.model_config.title_mappings)
-     ),
-     # Transformation of age column
-     ("age_transform", age_col_tfr(config.model_config.age_var)
-     ),
-    # scale
-     ("scaler", StandardScaler()),
-     ('model_rf', RandomForestClassifier(n_estimators=config.model_config.n_estimators, max_depth=config.model_config.max_depth,
-                                      random_state=config.model_config.random_state))
-          
-     ])
+
+# Create a function that returns a model
+def create_model(input_dim,output_dim, optimizer, loss, metrics,dropout,rdropout,units):
+
+    model_lstm = Sequential()
+    model_lstm.add(Embedding(input_dim=input_dim, output_dim=output_dim))
+    model_lstm.add(LSTM(units=units,  dropout=dropout, recurrent_dropout=rdropout))
+    model_lstm.add(Dense(1, activation='sigmoid'))
+    model_lstm.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+    return model_lstm
+
+
+# Create model
+classifier = create_model(input_dim = config.model_config.input_dim,output_dim = config.model_config.output_dim, 
+                          optimizer = config.model_config.optimizer, 
+                          loss = config.model_config.loss, 
+                          metrics = [config.model_config.accuracy_metric],
+                          dropout = config.model_config.dropout,
+                          rdropout = config.model_config.rdropout,
+                          units = config.model_config.units)

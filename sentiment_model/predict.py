@@ -4,44 +4,38 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from typing import Union
 import pandas as pd
-import numpy as np
+import tensorflow as tf
 
-from titanic_model import __version__ as _version
-from titanic_model.config.core import config
-from titanic_model.pipeline import titanic_pipe
-from titanic_model.processing.data_manager import load_pipeline
-from titanic_model.processing.data_manager import pre_pipeline_preparation
-from titanic_model.processing.validation import validate_inputs
+from catvsdog_model import __version__ as _version
+from catvsdog_model.config.core import config
+from catvsdog_model.processing.data_manager import load_model, load_test_dataset
 
-
-pipeline_file_name = f"{config.app_config.pipeline_save_file}{_version}.pkl"
-titanic_pipe= load_pipeline(file_name=pipeline_file_name)
+model_file_name = f"{config.app_config.model_save_file}{_version}"
+clf_model = load_model(file_name = model_file_name)
 
 
-def make_prediction(*,input_data:Union[pd.DataFrame, dict]) -> dict:
+def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict:
     """Make a prediction using a saved model """
-
-    validated_data, errors = validate_inputs(input_df=pd.DataFrame(input_data))
-    #print(validated_data)
     
-    #validated_data=validated_data.reindex(columns=['Pclass','Sex','Age','Fare', 'Embarked','FamilySize','Has_cabin','Title'])
-  
-    results = {"predictions": None, "version": _version, "errors": errors}
+    results = {"predictions": None, "version": _version}
     
-    #predictions = titanic_pipe.predict(validated_data)
-
-    #print(results)
-    if not errors:
+    predictions = clf_model.predict(input_data, verbose = 0)
+    pred_labels = []
+    for i in predictions:
+        pred_labels.append(config.model_config.label_mappings[int(predictions + 0.5)])
         
-        predictions = titanic_pipe.predict(validated_data)
-        results = {"predictions": predictions,"version": _version, "errors": errors}
-        #print(results)
+    results = {"predictions": pred_labels, "version": _version}
+    print(results)
 
     return results
 
+
 if __name__ == "__main__":
 
-    data_in={'PassengerId':[60],'Pclass':[2],'Name':["Caldwell, Master. Alden Gates"],'Sex':['male'],'Age':[0.83],
-                'SibSp':[2],'Parch':[3],'Ticket':[48738],'Cabin':['ramen'],'Embarked':['S'],'Fare':[45]}
+    test_data = load_test_dataset()
+    for data, labels in test_data:
+        data_in = data[0]
+        break
     
-    print(make_prediction(input_data=data_in))
+    data_in = tf.reshape(data_in, (1, 180, 180, 3))
+    make_prediction(input_data = data_in)

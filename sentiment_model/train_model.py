@@ -3,40 +3,33 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 
-from titanic_model.config.core import config
-from titanic_model.pipeline import titanic_pipe
-from titanic_model.processing.data_manager import load_dataset, save_pipeline
+from catvsdog_model.config.core import config
+from catvsdog_model.model import classifier
+from catvsdog_model.processing.data_manager import load_train_dataset, load_validation_dataset, load_test_dataset, callbacks_and_save_model
+
 
 def run_training() -> None:
     
     """
     Train the model.
     """
+    train_data = load_train_dataset()
+    val_data = load_validation_dataset()
+    test_data = load_test_dataset()
 
-    # read training data
-    data = load_dataset(file_name=config.app_config.training_data_file)
+    # Model fitting
+    classifier.fit(train_data,
+                   epochs = config.model_config.epochs,
+                   validation_data = val_data,
+                   callbacks = callbacks_and_save_model(),
+                   verbose = config.model_config.verbose)
 
-    # divide train and test
-    X_train, X_test, y_train, y_test = train_test_split(
-        data[config.model_config.features],  # predictors
-        data[config.model_config.target],
-        test_size=config.model_config.test_size,
-        # we are setting the random seed here
-        # for reproducibility
-        random_state=config.model_config.random_state,
-    )
+    # Calculate the score/error
+    #test_loss, test_acc = classifier.evaluate(test_data)
+    #print("Loss:", test_loss)
+    #print("Accuracy:", test_acc)
 
-    # Pipeline fitting
-    titanic_pipe.fit(X_train,y_train)  #
-    #y_pred = titanic_pipe.predict(X_test)
-    #print("Accuracy(in %):", accuracy_score(y_test, y_pred)*100)
-
-    # persist trained model
-    save_pipeline(pipeline_to_persist= titanic_pipe)
-    # printing the score
     
 if __name__ == "__main__":
     run_training()
