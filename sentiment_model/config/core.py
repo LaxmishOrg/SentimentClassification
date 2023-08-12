@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from strictyaml import YAML, load
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-import titanic_model
+import sentiment_model
 
 # Project Directories
 PACKAGE_ROOT = Path(titanic_model.__file__).resolve().parent
