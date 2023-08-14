@@ -8,9 +8,53 @@ from pathlib import Path
 import tensorflow as tf
 from tensorflow import keras
 from keras.utils import image_dataset_from_directory
-from catvsdog_model.config.core import config
-from catvsdog_model import __version__ as _version
-from catvsdog_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
+from sentiment_model.config.core import config
+from sentiment_model import __version__ as _version
+from sentiment_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
+
+
+##  Pre-Pipeline Preparation
+
+# 1. Extracts the title (Mr, Ms, etc) from the name variable
+def get_title(passenger:str) -> str:
+    line = passenger
+    if re.search('Mrs', line):
+        return 'Mrs'
+    elif re.search('Mr', line):
+        return 'Mr'
+    elif re.search('Miss', line):
+        return 'Miss'
+    elif re.search('Master', line):
+        return 'Master'
+    else:
+        return 'Other'
+    
+# 2. processing cabin
+
+f1=lambda x: 0 if type(x) == float else 1  ## Ternary Expression
+  
+  def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
+
+    data_frame["Title"] = data_frame["Name"].apply(get_title)       # Fetching title
+
+    data_frame['FamilySize'] = data_frame['SibSp'] + data_frame['Parch'] + 1  # Family size
+
+    data_frame['Has_cabin']=data_frame['Cabin'].apply(f1)               #  processing cabin 
+
+    # drop unnecessary variables
+    data_frame.drop(labels=config.model_config.unused_fields, axis=1, inplace=True)
+
+    return data_frame
+
+def _load_raw_dataset(*, file_name: str) -> pd.DataFrame:
+    dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
+    return dataframe
+
+def load_dataset(*, file_name: str) -> pd.DataFrame:
+    dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
+    transformed = pre_pipeline_preparation(data_frame=dataframe)
+
+    return transformed
 
 def load_train_dataset():
     train_dataset = image_dataset_from_directory(directory = DATASET_DIR / config.app_config.train_path,

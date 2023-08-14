@@ -4,9 +4,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 
-from catvsdog_model.config.core import config
-from catvsdog_model.model import classifier
-from catvsdog_model.processing.data_manager import load_train_dataset, load_validation_dataset, load_test_dataset, callbacks_and_save_model
+from sentiment_model.config.core import config
+from sentiment_model.model import classifier
+from sentiment_model.processing.data_manager import load_train_dataset, load_validation_dataset, load_test_dataset, callbacks_and_save_model
 
 
 def run_training() -> None:
