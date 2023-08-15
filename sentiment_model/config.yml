@@ -33,3 +33,9 @@ accuracy_metric: accuracy
 dropout: 0.2
 rdropout: 0.2
 units: 40
+
+unused_fields:  # Features to drop before pipeline
+  - Id
+  - HelpfulnessNumerator
+  - HelpfulnessDenominator
+  
