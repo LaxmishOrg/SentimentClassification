@@ -1,5 +1,5 @@
 from tensorflow import keras
-from catvsdog_model.config.core import config
+from sentiment_model.config.core import config
 
 # Performing the data augmentation as series of transformations
 def get_data_augmented(flip, rotation, zoom):

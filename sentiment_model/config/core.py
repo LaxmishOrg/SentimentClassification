@@ -31,6 +31,11 @@ class AppConfig(BaseModel):
     test_data_file: str
     model_name: str
     model_save_file: str
+    
+    embedding_dim: int
+    max_num_words: int
+    max_sequence_length: int
+    tokenizer_filename : str
 
 
 class ModelConfig(BaseModel):

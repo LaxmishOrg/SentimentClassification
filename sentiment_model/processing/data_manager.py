@@ -11,7 +11,7 @@ from keras.utils import image_dataset_from_directory
 from sentiment_model.config.core import config
 from sentiment_model import __version__ as _version
 from sentiment_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
-
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 ##  Pre-Pipeline Preparation
 
@@ -33,11 +33,7 @@ def preprocess_text(sen):
     words = [w for w in words if len(w) > 2]
 
     return words
-    
-# 2. processing cabin
-
-f1=lambda x: 0 if type(x) == float else 1  ## Ternary Expression
-  
+ 
 def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
 
     data_frame.dropna(subset = ['ProfileName', 'Summary'],inplace=True)
@@ -82,7 +78,14 @@ def callbacks_and_save_model():
 
     return callback_list
 
-
+def save_tokenizer(*, json_object: str)
+    # Writing to sample.json
+    # Prepare versioned save file name
+    save_file_name = f"{config.app_config.tokenizer_filename}{_version}"
+    save_path = TRAINED_MODEL_DIR / save_file_name
+    with open(save_path, "w") as outfile:
+      outfile.write(json_object)
+    
 def load_model(*, file_name: str) -> keras.models.Model:
     """Load a persisted model."""
 

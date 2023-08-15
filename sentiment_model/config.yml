@@ -22,7 +22,10 @@ earlystop: 0
 monitor: val_loss
 save_best_only: True
 
-
+embedding_dim: 100
+max_num_words: 50000
+max_sequence_length: 100
+tokenizer_filename : tokenizer_custom
 
 #Model Confirm parameters
 input_dim: 5000
