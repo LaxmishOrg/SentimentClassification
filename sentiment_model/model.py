@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -14,7 +16,7 @@ from sentiment_model.processing.features import data_augmentation
 
 # Create a function that returns a model
 def create_model(input_dim,output_dim, optimizer, loss, metrics,dropout,rdropout,units):
-
+    
     model_lstm = Sequential()
     model_lstm.add(Embedding(input_dim=input_dim, output_dim=output_dim))
     model_lstm.add(LSTM(units=units,  dropout=dropout, recurrent_dropout=rdropout))

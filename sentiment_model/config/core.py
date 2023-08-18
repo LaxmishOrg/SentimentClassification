@@ -43,7 +43,10 @@ class ModelConfig(BaseModel):
     All configuration relevant to model
     training and feature engineering.
     """
-        
+    rotation: float
+    zoom: float
+    flip: str
+    unused_fields: List[str]
     batch_size: int
     random_state: int
     epochs: int
@@ -59,8 +62,7 @@ class ModelConfig(BaseModel):
     dropout: float
     rdropout: float
     units: int
-    test_size_1 : int
-    test_size_2 : int
+    
     
 
 class Config(BaseModel):
