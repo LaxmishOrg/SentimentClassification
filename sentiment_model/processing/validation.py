@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel, ValidationError
 
-from titanic_model.config.core import config
-from titanic_model.processing.data_manager import pre_pipeline_preparation
+from sentiment_model.config.core import config
+from sentiment_model.processing.data_manager import pre_pipeline_preparation
 
 
 def validate_inputs(*, input_df: pd.DataFrame) -> Tuple[pd.DataFrame, Optional[dict]]:
@@ -27,18 +27,14 @@ def validate_inputs(*, input_df: pd.DataFrame) -> Tuple[pd.DataFrame, Optional[d
 
 
 class DataInputSchema(BaseModel):
-    PassengerId:Optional[int]
-    Pclass: Optional[int]
-    Name: Optional[str]
-    Sex: Optional[str]
-    Age: Optional[float]
-    SibSp: Optional[int]
-    Parch: Optional[int]
-    Ticket: Optional[str]
-    Cabin: Optional[Union[str, float]]
-    Embarked: Optional[str]
-    Fare: Optional[Union[int, float]]
-
-
+    ProductId:Optional[int]
+    Sentiment: Optional[int]
+    UserId: Optional[str]
+    ProfileName: Optional[str]
+    Score: Optional[int]
+    Time: Optional[Time]
+    Summary: Optional[str]
+    Text: Optional[str]
+ 
 class MultipleDataInputs(BaseModel):
     inputs: List[DataInputSchema]

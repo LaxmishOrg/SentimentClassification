@@ -3,40 +3,68 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 
-from titanic_model.config.core import config
-from titanic_model.pipeline import titanic_pipe
-from titanic_model.processing.data_manager import load_dataset, save_pipeline
+from sentiment_model.config.core import config
+from sentiment_model.model import classifier
+from sentiment_model.processing.data_manager import getDataset, load_dataset,callbacks_and_save_model,getTokenizer
 
-def run_training() -> None:
+
+def load_dataset() -> None:
     
     """
-    Train the model.
+    Split the dataset
     """
-
     # read training data
     data = load_dataset(file_name=config.app_config.training_data_file)
+    tf.keras.preprocessing.text.Tokenizer tokenizer = getTokenizer()
+    xtrain, x_test, ytrain, y_test = train_test_split(
+        data[0],  # predictors
+        data[1],
+        test_size=config.model_config.test_size_1,random_state = 0)
+    
+    X_train, X_val, y_train, y_val = train_test_split(
+        xtrain, 
+        ytrain, 
+        test_size = config.model_config.test_size_2, random_state = 0)
+     
+    X_train = tokenize_and_pad(X_train,tokenizer)
+    X_test = tokenize_and_pad(X_test,tokenizer)
+    X_val = tokenize_and_pad(X_val,tokenizer)
+     
+     classifier.fit(X_train, y_train,
+                   epochs = config.model_config.epochs,
+                   validation_data = (X_val,y_val),
+                   callbacks = callbacks_and_save_model(),
+                   verbose = config.model_config.verbose)
 
-    # divide train and test
-    X_train, X_test, y_train, y_test = train_test_split(
-        data[config.model_config.features],  # predictors
-        data[config.model_config.target],
-        test_size=config.model_config.test_size,
-        # we are setting the random seed here
-        # for reproducibility
-        random_state=config.model_config.random_state,
-    )
-
-    # Pipeline fitting
-    titanic_pipe.fit(X_train,y_train)  #
-    #y_pred = titanic_pipe.predict(X_test)
-    #print("Accuracy(in %):", accuracy_score(y_test, y_pred)*100)
+    # Calculate the score/error
+    #test_loss, test_acc = classifier.evaluate(test_data)
+    print("Accuracy(in %):", accuracy_score(x_test, y_test)*100)
 
     # persist trained model
-    save_pipeline(pipeline_to_persist= titanic_pipe)
+    save_pipeline(pipeline_to_persist= sentiment_pipe)
     # printing the score
+    
+if __name__ == "__main__":
+    run_training()
+
+    
+
+
+
+def tokenize_and_pad(*,df: pd.DataFrame , tokenizer :tf.keras.preprocessing.text.Tokenizer)->pd.DataFrame:
+    df = tokenizer.texts_to_sequences(df)
+    df = pad_sequences(df, maxlen=config.app_config.max_sequence_length) 
+    return df
+
+    
+def run_training() -> None:
+    
+    load_dataset()
+    # Model fitting
+    #print("Loss:", test_loss)
+    #print("Accuracy:", test_acc)
+
     
 if __name__ == "__main__":
     run_training()

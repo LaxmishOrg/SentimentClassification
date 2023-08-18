@@ -3,93 +3,133 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 import typing as t
-import re
-import joblib
-import pandas as pd
-from sklearn.pipeline import Pipeline
+from pathlib import Path
 
-from titanic_model import __version__ as _version
-from titanic_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config
-
+import tensorflow as tf
+from tensorflow import keras
+from sentiment_model.config.core import config
+from sentiment_model import __version__ as _version
+from sentiment_model.config.core 
+import DATASET_DIR, TRAINED_MODEL_DIR, config
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 ##  Pre-Pipeline Preparation
 
-# 1. Extracts the title (Mr, Ms, etc) from the name variable
-def get_title(passenger:str) -> str:
-    line = passenger
-    if re.search('Mrs', line):
-        return 'Mrs'
-    elif re.search('Mr', line):
-        return 'Mr'
-    elif re.search('Miss', line):
-        return 'Miss'
-    elif re.search('Master', line):
-        return 'Master'
-    else:
-        return 'Other'
-    
-# 2. processing cabin
+def preprocess_text(sen):
 
-f1=lambda x: 0 if type(x) == float else 1  ## Ternary Expression
-  
+    sen = re.sub('<.*?>', ' ', sen)                        # remove html tags
 
+    tokens = word_tokenize(sen)           # tokenize words
+
+    tokens = [w.lower() for w in tokens]                   # convert to lower case
+    table = str.maketrans('', '', string.punctuation)      # remove punctuations
+    stripped = [w.translate(table) for w in tokens]
+
+    words = [word for word in stripped if word.isalpha()]  # remove non-alphabet
+    stop_words = set(stopwords.words('english'))
+
+    words = [w for w in words if not w in stop_words]      # remove stop words
+
+    words = [w for w in words if len(w) > 2]
+
+    return words
+ 
 def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
 
-    data_frame["Title"] = data_frame["Name"].apply(get_title)       # Fetching title
-
-    data_frame['FamilySize'] = data_frame['SibSp'] + data_frame['Parch'] + 1  # Family size
-
-    data_frame['Has_cabin']=data_frame['Cabin'].apply(f1)               #  processing cabin 
-
+    data_frame.dropna(subset = ['ProfileName', 'Summary'],inplace=True)
+    
+    sentiment = data_frame['Score'].apply(lambda x : 'positive' if(x > 3) else 'negative')
+    
+    data_frame.insert(1, "Sentiment", sentiment)
+    
     # drop unnecessary variables
     data_frame.drop(labels=config.model_config.unused_fields, axis=1, inplace=True)
 
+    data_frame.drop_duplicates(subset=['Sentiment', 'Text'],inplace=True)
+    
+    data_frame['Time']=data_frame['Time'].apply(lambda x : datetime.fromtimestamp(x))
+    
+    data_frame['Text'] = data_frame['Text'].apply(preprocess_text)
+    
     return data_frame
-
-
-def _load_raw_dataset(*, file_name: str) -> pd.DataFrame:
-    dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
-    return dataframe
 
 def load_dataset(*, file_name: str) -> pd.DataFrame:
     dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
     transformed = pre_pipeline_preparation(data_frame=dataframe)
-
     return transformed
 
-
-def save_pipeline(*, pipeline_to_persist: Pipeline) -> None:
-    """Persist the pipeline.
-    Saves the versioned model, and overwrites any previous
-    saved models. This ensures that when the package is
-    published, there is only one trained model that can be
-    called, and we know exactly how it was built.
-    """
-
+# Define a function to return a commmonly used callback_list
+def callbacks_and_save_model():
+    callback_list = []
+    
     # Prepare versioned save file name
-    save_file_name = f"{config.app_config.pipeline_save_file}{_version}.pkl"
+    save_file_name = f"{config.app_config.model_save_file}{_version}"
     save_path = TRAINED_MODEL_DIR / save_file_name
 
-    remove_old_pipelines(files_to_keep=[save_file_name])
-    joblib.dump(pipeline_to_persist, save_path)
+    remove_old_model(files_to_keep = [save_file_name])
 
+    # Default callback
+    callback_list.append(keras.callbacks.ModelCheckpoint(filepath = save_path,
+                                                         save_best_only = config.model_config.save_best_only,
+                                                         monitor = config.model_config.monitor))
 
-def load_pipeline(*, file_name: str) -> Pipeline:
-    """Load a persisted pipeline."""
+    if config.model_config.earlystop > 0:
+        callback_list.append(keras.callbacks.EarlyStopping(patience = config.model_config.earlystop))
+
+    return callback_list
+
+def save_tokenizer(*, json_object: str)->None
+    # Writing to sample.json
+    # Prepare versioned save file name
+    save_file_name = f"{config.app_config.tokenizer_filename}{_version}"
+    save_path = TRAINED_MODEL_DIR / save_file_name
+    with open(save_path, "w") as outfile:
+      outfile.write(json_object)
+
+def load_tokenizer(filename):
+   with open(filename, 'r') as openfile:
+     # Reading from json file
+    json_object = json.load(openfile)
+    return json_object
+
+def load_model(*, file_name: str) -> keras.models.Model:
+    """Load a persisted model."""
 
     file_path = TRAINED_MODEL_DIR / file_name
-    trained_model = joblib.load(filename=file_path)
+    trained_model = keras.models.load_model(filepath = file_path)
     return trained_model
 
 
-def remove_old_pipelines(*, files_to_keep: t.List[str]) -> None:
+def remove_old_model(*, files_to_keep: t.List[str]) -> None:
     """
-    Remove old model pipelines.
-    This is to ensure there is a simple one-to-one
-    mapping between the package version and the model
-    version to be imported and used by other applications.
+    Remove old models.
+    This is to ensure there is a simple one-to-one mapping between the package version and 
+    the model version to be imported and used by other applications.
     """
     do_not_delete = files_to_keep + ["__init__.py"]
     for model_file in TRAINED_MODEL_DIR.iterdir():
         if model_file.name not in do_not_delete:
             model_file.unlink()
+
+def getDataset(*,df: pd.DataFrame)->tf.data.Dataset:
+      dataset_text = tf.data.Dataset.from_tensor_slices(df['Text'])
+      dataset_sentiment = tf.data.Dataset.from_tensor_slices(df['Sentiment'])
+      dataset = tf.data.Dataset.zip((dataset_text, dataset_sentiment))
+      return dataset   
+
+def getTokenizer(train_data_frame_text: pd.DataFrame)->tf.keras.preprocessing.text.Tokenizer:
+    save_file_name = f"{config.app_config.tokenizer_filename}{_version}"
+    save_path = TRAINED_MODEL_DIR / save_file_name
+    
+    if os.path.exists(save_path):
+        tokenizer_json = load_tokenizer(save_path)
+        tokenizer = tokenizer_from_json(tokenizer_json)
+    else:
+        tokenizer = Tokenizer(num_words=hparams["max_num_words"])
+        tokenizer.fit_on_texts(train_data_frame_text)
+        json_object = json.dumps(tokenizer.to_json())
+        save_tokenizer(json_object)
+    
+    return tokenizer
+    
+
