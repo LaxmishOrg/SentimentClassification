@@ -4,6 +4,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 import typing as t
 from pathlib import Path
+from pathlib import Path
 
 import tensorflow as tf
 from tensorflow import keras
@@ -29,7 +30,25 @@ def preprocess_text(sen):
     stop_words = set(stopwords.words('english'))
 
     words = [w for w in words if not w in stop_words]      # remove stop words
+def preprocess_text(sen):
 
+    sen = re.sub('<.*?>', ' ', sen)                        # remove html tags
+
+    tokens = word_tokenize(sen)           # tokenize words
+
+    tokens = [w.lower() for w in tokens]                   # convert to lower case
+    table = str.maketrans('', '', string.punctuation)      # remove punctuations
+    stripped = [w.translate(table) for w in tokens]
+
+    words = [word for word in stripped if word.isalpha()]  # remove non-alphabet
+    stop_words = set(stopwords.words('english'))
+
+    words = [w for w in words if not w in stop_words]      # remove stop words
+
+    words = [w for w in words if len(w) > 2]
+
+    return words
+ 
     words = [w for w in words if len(w) > 2]
 
     return words
@@ -42,8 +61,21 @@ def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
     
     data_frame.insert(1, "Sentiment", sentiment)
     
+    data_frame.dropna(subset = ['ProfileName', 'Summary'],inplace=True)
+    
+    sentiment = data_frame['Score'].apply(lambda x : 'positive' if(x > 3) else 'negative')
+    
+    data_frame.insert(1, "Sentiment", sentiment)
+    
     # drop unnecessary variables
     data_frame.drop(labels=config.model_config.unused_fields, axis=1, inplace=True)
+
+    data_frame.drop_duplicates(subset=['Sentiment', 'Text'],inplace=True)
+    
+    data_frame['Time']=data_frame['Time'].apply(lambda x : datetime.fromtimestamp(x))
+    
+    data_frame['Text'] = data_frame['Text'].apply(preprocess_text)
+    
 
     data_frame.drop_duplicates(subset=['Sentiment', 'Text'],inplace=True)
     
@@ -62,7 +94,12 @@ def load_dataset(*, file_name: str) -> pd.DataFrame:
 def callbacks_and_save_model():
     callback_list = []
     
+# Define a function to return a commmonly used callback_list
+def callbacks_and_save_model():
+    callback_list = []
+    
     # Prepare versioned save file name
+    save_file_name = f"{config.app_config.model_save_file}{_version}"
     save_file_name = f"{config.app_config.model_save_file}{_version}"
     save_path = TRAINED_MODEL_DIR / save_file_name
 
@@ -97,11 +134,16 @@ def load_model(*, file_name: str) -> keras.models.Model:
 
     file_path = TRAINED_MODEL_DIR / file_name
     trained_model = keras.models.load_model(filepath = file_path)
+    trained_model = keras.models.load_model(filepath = file_path)
     return trained_model
 
 
 def remove_old_model(*, files_to_keep: t.List[str]) -> None:
+def remove_old_model(*, files_to_keep: t.List[str]) -> None:
     """
+    Remove old models.
+    This is to ensure there is a simple one-to-one mapping between the package version and 
+    the model version to be imported and used by other applications.
     Remove old models.
     This is to ensure there is a simple one-to-one mapping between the package version and 
     the model version to be imported and used by other applications.

@@ -1,53 +1,26 @@
 # Package Overview
 package_name: sentiment_model
 
-# Data Files
-# Data Files
+# Data Files/content/Reviews.csv
 training_data_file: Reviews.csv
 test_data_file: test.csv
 
+# Variables
+# The variable we are attempting to predict (Survival)
+target: Sentiment
 
-model_name: sentiment_model
-model_save_file: sentiment__model_output_v
-
-
-# Set the random seed
-random_state: 42
-
-# Alogrithm parameters
-batch_size: 64
-epochs: 3
-verbose: 1
-earlystop: 0
-monitor: val_loss
-save_best_only: True
-
-embedding_dim: 100
-max_num_words: 50000
-max_sequence_length: 100
-tokenizer_filename : tokenizer_custom
-test_size_1 : 0.2
-test_size_2 : 0.25
-
-#Model Confirm parameters
-input_dim: 5000
-output_dim: 64
-optimizer: adam 
-loss: binary_crossentropy
-accuracy_metric: accuracy
-dropout: 0.2
-rdropout: 0.2
-units: 40
+pipeline_name: sentiment_model
+pipeline_save_file: sentiment__model_output_v
 
 features:      # final features to be use
   - ProductId
-  - Sentiment
-  - UserId 
+  - UserId
   - ProfileName 
-  - Score
-  - Time  
-  - Summary
+  - Score 
+  - Time
+  - Summary  
   - Text
+  
 unused_fields:  # Features to drop before pipeline
   - Id
   - HelpfulnessNumerator
