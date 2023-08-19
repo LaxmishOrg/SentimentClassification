@@ -64,6 +64,7 @@ class ModelConfig(BaseModel):
     rdropout: float
     test_size:float
     test_size2:float
+    target: str
     
     
 

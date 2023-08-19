@@ -168,3 +168,7 @@ def load_pipeline(*, file_name: str) -> Pipeline:
     file_path = TRAINED_MODEL_DIR / file_name
     trained_model = joblib.load(filename=file_path)
     return trained_model
+
+def _load_raw_dataset(*, file_name: str) -> pd.DataFrame:
+    dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
+    return dataframe
