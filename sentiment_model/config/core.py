@@ -49,6 +49,7 @@ class ModelConfig(BaseModel):
     unused_fields: List[str]
     batch_size: int
     random_state: int
+    units: int
     epochs: int
     optimizer: str
     loss: str
@@ -61,7 +62,8 @@ class ModelConfig(BaseModel):
     output_dim: int
     dropout: float
     rdropout: float
-    units: int
+    test_size:float
+    test_size2:float
     
     
 

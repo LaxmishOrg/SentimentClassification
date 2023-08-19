@@ -14,6 +14,7 @@ from nltk.tokenize import word_tokenize  # Import word_tokenize from nltk
 from nltk.corpus import stopwords  # Import the stopwords module
 import datetime
 import os
+import json 
 
 import tensorflow as tf
 from tensorflow import keras
@@ -24,9 +25,10 @@ from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
 
 import nltk
 nltk.download('punkt')
-# Set the NLTK data path to a directory where you have write access
 nltk.data.path.append(PACKAGE_ROOT / "nltk_data")
 nltk.download('stopwords')
+
+
 
 ##  Pre-Pipeline Preparation
 
@@ -57,6 +59,9 @@ def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
     
     data_frame.insert(1, "Sentiment", sentiment)
     
+    #Convert Sentiment to numerical
+    data_frame['Sentiment'] = data_frame['Sentiment'].apply(lambda x: 1 if x=="positive" else 0)
+    
     # drop unnecessary variables
     data_frame.drop(labels=config.model_config.unused_fields, axis=1, inplace=True)
     
@@ -68,8 +73,6 @@ def pre_pipeline_preparation(*, data_frame: pd.DataFrame) -> pd.DataFrame:
     data_frame['Time']=data_frame['Time'].apply(lambda x : datetime.datetime.fromtimestamp(x))
     
     data_frame['Text'] = data_frame['Text'].apply(preprocess_text)
-    
-
     
     return data_frame
 
@@ -151,11 +154,17 @@ def getTokenizer(train_data_frame_text: pd.DataFrame)->tf.keras.preprocessing.te
         tokenizer_json = load_tokenizer(save_path)
         tokenizer = tokenizer_from_json(tokenizer_json)
     else:
-        tokenizer = Tokenizer(num_words=config.model_config.max_num_words)
+        tokenizer = Tokenizer(num_words=config.app_config.max_num_words)
         tokenizer.fit_on_texts(train_data_frame_text)
         json_object = json.dumps(tokenizer.to_json())
-        save_tokenizer(json_object)
+        save_tokenizer(json_object=json_object)
     
     return tokenizer
     
 
+def load_pipeline(*, file_name: str) -> Pipeline:
+    """Load a persisted pipeline."""
+
+    file_path = TRAINED_MODEL_DIR / file_name
+    trained_model = joblib.load(filename=file_path)
+    return trained_model

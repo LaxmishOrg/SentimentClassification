@@ -5,10 +5,13 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from typing import Union
 import pandas as pd
 import tensorflow as tf
+from tensorflow.keras.preprocessing.text import Tokenizer, tokenizer_from_json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-from catvsdog_model import __version__ as _version
-from catvsdog_model.config.core import config
-from catvsdog_model.processing.data_manager import load_model, load_test_dataset
+from sentiment_model import __version__ as _version
+from sentiment_model.config.core import config
+from sentiment_model.processing.data_manager import load_model, getTokenizer
+
 
 model_file_name = f"{config.app_config.model_save_file}{_version}"
 clf_model = load_model(file_name = model_file_name)
@@ -17,6 +20,10 @@ clf_model = load_model(file_name = model_file_name)
 def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict:
     """Make a prediction using a saved model """
     
+    tokenized_input = tokenizer.texts_to_sequences([input_text])
+    padded_input = pad_sequences(tokenized_input, maxlen=config.app_config.max_sequence_length)
+    reshaped_input = tf.reshape(padded_input, (1, config.app_config.max_sequence_length))
+
     results = {"predictions": None, "version": _version}
     
     predictions = clf_model.predict(input_data, verbose = 0)
@@ -32,10 +39,21 @@ def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict
 
 if __name__ == "__main__":
 
-    test_data = load_test_dataset()
-    for data, labels in test_data:
-        data_in = data[0]
-        break
     
-    data_in = tf.reshape(data_in, (1, 180, 180, 3))
-    make_prediction(input_data = data_in)
+    test_sample_1 = "This movie is fantastic! I really like it because it is so good!"
+   # test_sample_2 = "Good movie!"
+   # test_sample_3 = "Maybe I like this movie."
+   # test_sample_4 = "Not to my taste, will skip and watch another movie"
+   # test_sample_5 = "if you like action, then this movie might be good for you."
+   # test_sample_6 = "Bad movie!"
+   # test_sample_7 = "Not a good movie!"
+   # test_sample_8 = "This movie really sucks! Can I get my money back please?"
+   # test_samples = [test_sample_1, test_sample_2, test_sample_3, test_sample_4, test_sample_5, test_sample_6, test_sample_7, test_sample_8]
+    
+    #data_in={'Text':['This movie is fantastic! I really like it because it is so good!']}
+   
+    input_text = "This movie is fantastic! I really like it because it is so good!"
+    input_data = pd.DataFrame({"Text": [input_text]})
+
+    
+    make_prediction(input_data = input_data)
