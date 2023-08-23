@@ -6,11 +6,12 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 # Package meta-data.
-NAME = 'sentiment_model'
+NAME = 'aimlops_sentiment_model'
 DESCRIPTION = "Sentiment Model for assessing sentiment. It is a classification model package "
-EMAIL = "------"
-AUTHOR = "----------"
+EMAIL = "ajaytevatia@gmail.com"
+AUTHOR = "Ajay Singh"
 REQUIRES_PYTHON = ">=3.11.0"
+
 
 
 # The rest no need to touch too much :)

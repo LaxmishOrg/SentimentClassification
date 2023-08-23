@@ -11,25 +11,26 @@ from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras import layers
 
 from sentiment_model.config.core import config
-from sentiment_model.processing.features import data_augmentation
-
 
 # Create a function that returns a model
-def create_model(input_dim,output_dim, optimizer, loss, metrics,dropout,rdropout,units):
+def create_model(*,input_dim:int,output_dim:int, p_optimizer:str, p_loss:str, 
+                 metrics: int,p_dropout:float,
+                 r_dropout:float,p_units:int)-> keras.models.Model:
     
     model_lstm = Sequential()
     model_lstm.add(Embedding(input_dim=input_dim, output_dim=output_dim))
-    model_lstm.add(LSTM(units=units,  dropout=dropout, recurrent_dropout=rdropout))
+    model_lstm.add(LSTM(units=p_units,  dropout=dropout, recurrent_dropout=r_dropout))
     model_lstm.add(Dense(1, activation='sigmoid'))
-    model_lstm.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+    model_lstm.compile(loss=p_loss, optimizer=p_optimizer, metrics=metrics)
     return model_lstm
 
 
 # Create model
-classifier = create_model(input_dim = config.model_config.input_dim,output_dim = config.model_config.output_dim, 
-                          optimizer = config.model_config.optimizer, 
-                          loss = config.model_config.loss, 
+classifier = create_model(input_dim = config.model_config.input_dim,
+                          output_dim = config.model_config.output_dim, 
+                          p_optimizer = config.model_config.optimizer, 
+                          p_loss = config.model_config.loss, 
                           metrics = [config.model_config.accuracy_metric],
-                          dropout = config.model_config.dropout,
-                          rdropout = config.model_config.rdropout,
-                          units = config.model_config.units)
+                          p_dropout = config.model_config.dropout,
+                          r_dropout = config.model_config.rdropout,
+                          p_units = config.model_config.units)

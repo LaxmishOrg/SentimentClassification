@@ -23,14 +23,12 @@ model_name: sentiment_model
 model_save_file: sentiment__model_output_v
 
     
-embedding_dim: 100
-max_num_words: 20000
+embedding_dim: 64
+max_num_words: 50000
 max_sequence_length: 100
 tokenizer_filename : strtokenizer_custom.txt
 
 # Feature engineering parameters
-rotation: 0.1
-zoom: 0.2
 flip: horizontal
 
 batch_size: 32
@@ -41,7 +39,7 @@ loss: binary_crossentropy
 accuracy_metric: accuracy
 verbose: 1  #1: Display progress bar for each epoch. 2:Display one line per epoch.
 earlystop: 0
-monitor: 'val_loss' #Choosing 'val_loss' to prevent overfitting and ensure good generalization. 'val_accuracy' can be tried for good accuracy
+monitor: val_loss #Choosing 'val_loss' to prevent overfitting and ensure good generalization. 'val_accuracy' can be tried for good accuracy
 save_best_only: True
 input_dim: 5000
 output_dim: 64

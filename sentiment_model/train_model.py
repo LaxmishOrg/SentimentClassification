@@ -36,11 +36,11 @@ def run_training_dataset() -> None:
     X_train = tokenize_and_pad(X_train, tokenizer)
     X_test = tokenize_and_pad(x_test, tokenizer)
     X_val = tokenize_and_pad(X_val, tokenizer)
-     
+    callback_method = callbacks_and_save_model()
     classifier.fit(X_train, y_train,
                    epochs=config.model_config.epochs,
                    validation_data=(X_val, y_val),
-                   callbacks=callbacks_and_save_model(),
+                   callbacks=callback_method,
                    verbose=config.model_config.verbose)
 
     # Calculate the score/error
@@ -48,7 +48,7 @@ def run_training_dataset() -> None:
     print("Accuracy(in %):", accuracy_score(x_test, y_test) * 100)
 
     # persist trained model
-    save_pipeline(pipeline_to_persist=sentiment_pipe)
+    #save_pipeline(pipeline_to_persist=sentiment_pipe)
     # printing the score
 
     

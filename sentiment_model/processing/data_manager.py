@@ -167,3 +167,15 @@ def getTokenizer(train_data_frame_text: pd.DataFrame)->tf.keras.preprocessing.te
         save_tokenizer(json_object)
     
     return tokenizer
+    
+
+def load_pipeline(*, file_name: str) -> Pipeline:
+    """Load a persisted pipeline."""
+
+    file_path = TRAINED_MODEL_DIR / file_name
+    trained_model = joblib.load(filename=file_path)
+    return trained_model
+
+def _load_raw_dataset(*, file_name: str) -> pd.DataFrame:
+    dataframe = pd.read_csv(Path(f"{DATASET_DIR}/{file_name}"))
+    return dataframe

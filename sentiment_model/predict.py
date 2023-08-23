@@ -10,23 +10,23 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from sentiment_model import __version__ as _version
 from sentiment_model.config.core import config
-from sentiment_model.processing.data_manager import load_model, getTokenizer
+from sentiment_model.processing.data_manager import load_model, getTokenizer, load_dataset
 
 
 model_file_name = f"{config.app_config.model_save_file}{_version}"
 clf_model = load_model(file_name = model_file_name)
-ab = pd.DataFrame()
-tokenizer = getTokenizer(ab)
+
+tokenizer = getTokenizer('')
 def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict:
     """Make a prediction using a saved model """
     
-    tokenized_input = tokenizer.texts_to_sequences([input_text])
+    tokenized_input = tokenizer.texts_to_sequences([input_data])
     padded_input = pad_sequences(tokenized_input, maxlen=config.app_config.max_sequence_length)
   #  reshaped_input = tf.reshape(padded_input, (1, config.app_config.max_sequence_length))
 
     results = {"predictions": None, "version": _version}
     
-    predictions = clf_model.predict(padded_input, verbose = 0)
+    predictions = clf_model.predict(reshaped_input, verbose = 0)
     pred_labels = []
     for i in predictions:
         pred_labels.append(predictions)
