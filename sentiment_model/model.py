@@ -19,7 +19,7 @@ def create_model(*,input_dim:int,output_dim:int, p_optimizer:str, p_loss:str,
     
     model_lstm = Sequential()
     model_lstm.add(Embedding(input_dim=input_dim, output_dim=output_dim))
-    model_lstm.add(LSTM(units=p_units,  dropout=dropout, recurrent_dropout=r_dropout))
+    model_lstm.add(LSTM(units=p_units,  dropout=p_dropout, recurrent_dropout=r_dropout))
     model_lstm.add(Dense(1, activation='sigmoid'))
     model_lstm.compile(loss=p_loss, optimizer=p_optimizer, metrics=metrics)
     return model_lstm

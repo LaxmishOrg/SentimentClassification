@@ -169,7 +169,7 @@ def getTokenizer(train_data_frame_text: pd.DataFrame)->tf.keras.preprocessing.te
     return tokenizer
     
 
-def load_pipeline(*, file_name: str) -> Pipeline:
+def load_pipeline(*, file_name: str):
     """Load a persisted pipeline."""
 
     file_path = TRAINED_MODEL_DIR / file_name
