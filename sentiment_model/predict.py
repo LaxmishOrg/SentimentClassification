@@ -15,24 +15,27 @@ from sentiment_model.processing.data_manager import load_model, getTokenizer
 
 model_file_name = f"{config.app_config.model_save_file}{_version}"
 clf_model = load_model(file_name = model_file_name)
-
-
+ab = pd.DataFrame()
+tokenizer = getTokenizer(ab)
 def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict:
     """Make a prediction using a saved model """
     
     tokenized_input = tokenizer.texts_to_sequences([input_text])
     padded_input = pad_sequences(tokenized_input, maxlen=config.app_config.max_sequence_length)
-    reshaped_input = tf.reshape(padded_input, (1, config.app_config.max_sequence_length))
+  #  reshaped_input = tf.reshape(padded_input, (1, config.app_config.max_sequence_length))
 
     results = {"predictions": None, "version": _version}
     
-    predictions = clf_model.predict(input_data, verbose = 0)
+    predictions = clf_model.predict(padded_input, verbose = 0)
     pred_labels = []
     for i in predictions:
-        pred_labels.append(config.model_config.label_mappings[int(predictions + 0.5)])
+        pred_labels.append(predictions)
         
     results = {"predictions": pred_labels, "version": _version}
-    print(results)
+    pred = results.get('predictions')
+    val = pred[0]
+    print(val[0])
+    #print(type(results))
 
     return results
 
@@ -40,7 +43,7 @@ def make_prediction(*, input_data: Union[pd.DataFrame, dict, tf.Tensor]) -> dict
 if __name__ == "__main__":
 
     
-    test_sample_1 = "This movie is fantastic! I really like it because it is so good!"
+    test_sample_1 = "This movie is not good! I really did not like it because it is so good!"
    # test_sample_2 = "Good movie!"
    # test_sample_3 = "Maybe I like this movie."
    # test_sample_4 = "Not to my taste, will skip and watch another movie"
@@ -52,7 +55,7 @@ if __name__ == "__main__":
     
     #data_in={'Text':['This movie is fantastic! I really like it because it is so good!']}
    
-    input_text = "This movie is fantastic! I really like it because it is so good!"
+    input_text = "This movie is not good! I really did not like it because it is bad!"
     input_data = pd.DataFrame({"Text": [input_text]})
 
     

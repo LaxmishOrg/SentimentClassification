@@ -36,6 +36,7 @@ class AppConfig(BaseModel):
     max_num_words: int
     max_sequence_length: int
     tokenizer_filename : str
+    save_best_only: bool
 
 
 class ModelConfig(BaseModel):
@@ -43,9 +44,6 @@ class ModelConfig(BaseModel):
     All configuration relevant to model
     training and feature engineering.
     """
-    rotation: float
-    zoom: float
-    flip: str
     unused_fields: List[str]
     batch_size: int
     random_state: int
@@ -109,6 +107,5 @@ def create_and_validate_config(parsed_config: YAML = None) -> Config:
     )
 
     return _config
-
 
 config = create_and_validate_config()
