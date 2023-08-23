@@ -2,12 +2,10 @@
 Note: These tests will fail if you have not first trained the model.
 """
 import sys
-import pandas as pd
+
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import numpy as np
-import tensorflow as tf
 from sentiment_model import __version__ as _version
 from sentiment_model.config.core import config
 from sentiment_model.predict import make_prediction

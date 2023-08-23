@@ -14,7 +14,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 import tensorflow as tf
 from tensorflow import keras
-import config
+#import sentiment_model.config
 from sentiment_model.config.core import config
 from sentiment_model import __version__ as _version
 from sentiment_model.config.core import DATASET_DIR, TRAINED_MODEL_DIR, config, PACKAGE_ROOT
